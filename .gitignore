@@ -1,0 +1,40 @@
+# Node / frontend
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Java / backend
+backend/target/
+backend/.mvn/
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+
+# Python / ai-engine, simulator
+**/__pycache__/
+**/*.pyc
+ai-engine/.venv/
+simulator/.venv/
+*.egg-info/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Internal planning/discussion docs -- not shipped app code, kept locally only
+*.md
+!/README.md
+*.zip
