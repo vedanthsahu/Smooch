@@ -6,6 +6,7 @@ frontend/.vite/
 # Java / backend
 backend/target/
 backend/.mvn/
+backend/data/
 *.class
 *.jar
 !.mvn/wrapper/maven-wrapper.jar
