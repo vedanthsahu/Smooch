@@ -7,7 +7,11 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-incidentcommand}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-incidentcommand}
     ports:
-      - "5432:5432"
+      # Host port 5433, not 5432 -- this machine already has a native Postgres
+      # bound to 5432 (unrelated to this project), so 5432 was silently
+      # intercepting connections meant for this container. See git history /
+      # commit message for how this was diagnosed.
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
