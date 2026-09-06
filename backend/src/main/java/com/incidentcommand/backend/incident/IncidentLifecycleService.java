@@ -61,14 +61,18 @@ public class IncidentLifecycleService {
         return Optional.of(incident.getId());
     }
 
+    /** Returns the resolved incident's id if one was open (caller uses this to
+     * trigger the S3 report export -- see ReportExportService -- outside this
+     * transaction), empty if none was open. */
     @Transactional
-    public void resolveIfOpen(ProductionService service) {
-        incidentRepository.findOpenByServiceId(service.getId()).ifPresent(incident -> {
+    public Optional<Long> resolveIfOpen(ProductionService service) {
+        return incidentRepository.findOpenByServiceId(service.getId()).map(incident -> {
             incident.setStatus(IncidentStatus.RESOLVED);
             incident.setResolvedAt(Instant.now());
             incidentRepository.save(incident);
             incidentEventRepository.save(new IncidentEvent(incident, "RESOLVED", "system", null));
             log.info("Incident #{} resolved for service '{}'", incident.getId(), service.getName());
+            return incident.getId();
         });
     }
 }
