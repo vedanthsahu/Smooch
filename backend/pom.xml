@@ -60,6 +60,19 @@
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-database-postgresql</artifactId>
 		</dependency>
+		<dependency>
+			<!-- Loads backend/.env at startup. See docs/15-security-and-rbac.md
+			     secrets note. Real deployments (Level 10 AWS) should use actual
+			     env vars / a secrets manager instead; this is a local-dev convenience. -->
+			<groupId>me.paulschwarz</groupId>
+			<artifactId>spring-dotenv</artifactId>
+			<version>5.1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>s3</artifactId>
+			<version>2.54.13</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

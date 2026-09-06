@@ -29,16 +29,19 @@ public class DetectionService {
     private final ProductionServiceRepository serviceRepository;
     private final IncidentLifecycleService incidentLifecycleService;
     private final InvestigationService investigationService;
+    private final IncidentReportExportService reportExportService;
     private final SimulatorClient simulatorClient;
 
     public DetectionService(
             ProductionServiceRepository serviceRepository,
             IncidentLifecycleService incidentLifecycleService,
             InvestigationService investigationService,
+            IncidentReportExportService reportExportService,
             SimulatorClient simulatorClient) {
         this.serviceRepository = serviceRepository;
         this.incidentLifecycleService = incidentLifecycleService;
         this.investigationService = investigationService;
+        this.reportExportService = reportExportService;
         this.simulatorClient = simulatorClient;
     }
 
@@ -62,7 +65,8 @@ public class DetectionService {
             Optional<Long> newIncidentId = incidentLifecycleService.openIfNeeded(service, health.get().status());
             newIncidentId.ifPresent(investigationService::investigateAndPersist);
         } else {
-            incidentLifecycleService.resolveIfOpen(service);
+            Optional<Long> resolvedIncidentId = incidentLifecycleService.resolveIfOpen(service);
+            resolvedIncidentId.ifPresent(reportExportService::exportAndUpload);
         }
     }
 }
