@@ -1,6 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { getIncident, type IncidentDetail as IncidentDetailData } from '../api/incidents'
 import { SlaCountdown } from './SlaCountdown'
+import { SeverityBadge, StatusBadge } from './Badges'
+import './components.css'
+
+const POLL_MS = 3000
 
 interface EvidenceEntry {
   service_id: string
@@ -22,83 +26,113 @@ function parseEvidence(evidenceJson: string | null): EvidenceEntry[] {
 export function IncidentDetail({ incidentId, onBack }: { incidentId: number; onBack: () => void }) {
   const [detail, setDetail] = useState<IncidentDetailData | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const loadedOnce = useRef(false)
 
   useEffect(() => {
     let cancelled = false
+    loadedOnce.current = false
     setDetail(null)
-    getIncident(incidentId)
-      .then((data) => {
-        if (!cancelled) setDetail(data)
-      })
-      .catch((err) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : 'failed to load incident')
-      })
+    const load = () => {
+      getIncident(incidentId)
+        .then((data) => {
+          if (cancelled) return
+          setDetail(data)
+          setError(null)
+          loadedOnce.current = true
+        })
+        .catch((err) => {
+          if (!cancelled) setError(err instanceof Error ? err.message : 'failed to load incident')
+        })
+    }
+    load()
+    const interval = setInterval(load, POLL_MS)
     return () => {
       cancelled = true
+      clearInterval(interval)
     }
   }, [incidentId])
 
-  if (error) return <p style={{ color: 'crimson' }}>Failed to load incident: {error}</p>
-  if (detail === null) return <p>Loading incident #{incidentId}…</p>
+  if (error && !loadedOnce.current) return <p className="error-state">Failed to load incident: {error}</p>
+  if (detail === null) return <p className="empty-state">Loading incident #{incidentId}…</p>
 
   const { incident, timeline, investigation } = detail
   const evidence = parseEvidence(investigation?.evidenceJson ?? null)
 
   return (
     <div>
-      <button onClick={onBack} style={{ marginBottom: '1rem' }}>
+      <button className="ghost" onClick={onBack} style={{ marginBottom: '1rem' }}>
         ← back to incidents
       </button>
 
-      <h2>
-        #{incident.id} — {incident.serviceName} ({incident.productionName})
-      </h2>
-      <p>
-        Severity: <strong>{incident.severity}</strong> &nbsp;|&nbsp; Status: <strong>{incident.status}</strong>{' '}
-        &nbsp;|&nbsp; SLA remaining: <SlaCountdown deadlineAt={incident.slaDeadlineAt} resolved={incident.status === 'RESOLVED'} />
-      </p>
-
-      <h3>Investigation</h3>
-      {investigation === null && <p style={{ color: '#888' }}>Not yet investigated.</p>}
-      {investigation !== null && (
-        <div style={{ border: '1px solid #ddd', borderRadius: 6, padding: '0.75rem 1rem', marginBottom: '1rem' }}>
-          <p>
-            <strong>Diagnosis</strong> ({investigation.status}, {investigation.provider}/{investigation.model}, tier=
-            {investigation.tier}, {investigation.totalLatencyMs} ms):
-          </p>
-          <p style={{ whiteSpace: 'pre-wrap' }}>{investigation.diagnosis}</p>
-          <p style={{ color: '#888', fontSize: '0.85rem' }}>
-            Confidence/quality is not calibrated -- see docs/09-ai-engine-architecture.md. Treat as a starting
-            hypothesis, verify against the evidence below.
-          </p>
-
-          {evidence.length > 0 && (
-            <>
-              <p>
-                <strong>Evidence examined</strong> ({investigation.servicesExamined}):
-              </p>
-              <ul>
-                {evidence.map((e, i) => (
-                  <li key={i}>
-                    <code>[{e.service_id}]</code> {e.source_type} ({e.available ? `${e.latency_ms}ms` : 'unavailable'}
-                    ): <code>{JSON.stringify(e.content)}</code>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
+      <div className="card">
+        <div className="detail-header">
+          <div>
+            <p className="detail-title">
+              #{incident.id} — {incident.serviceName} ({incident.productionName})
+            </p>
+            <div className="detail-meta">
+              <SeverityBadge severity={incident.severity} />
+              <StatusBadge status={incident.status} />
+            </div>
+          </div>
+          <div className="sla-block">
+            <div className="label">SLA remaining</div>
+            <SlaCountdown deadlineAt={incident.slaDeadlineAt} resolved={incident.status === 'RESOLVED'} />
+          </div>
         </div>
-      )}
+      </div>
 
-      <h3>Timeline</h3>
-      <ul>
-        {timeline.map((event) => (
-          <li key={event.id}>
-            {new Date(event.createdAt).toLocaleTimeString()} — <strong>{event.eventType}</strong> ({event.actor})
-            {event.payload ? `: ${event.payload}` : ''}
-          </li>
-        ))}
-      </ul>
+      <div className="card">
+        <p className="section-title">AI investigation</p>
+        {investigation === null && <p className="empty-state">Not yet investigated.</p>}
+        {investigation !== null && (
+          <>
+            <div className="investigation-meta">
+              <span className="chip">{investigation.status}</span>
+              <span className="chip">
+                {investigation.provider ?? '—'}/{investigation.model ?? '—'}
+              </span>
+              <span className="chip">tier={investigation.tier ?? '—'}</span>
+              {investigation.totalLatencyMs != null && <span className="chip">{investigation.totalLatencyMs} ms</span>}
+            </div>
+            <p className="diagnosis-text">{investigation.diagnosis}</p>
+            <p className="disclaimer">
+              Diagnosis quality is not calibrated to a confidence score yet — treat this as a starting hypothesis,
+              verify against the evidence below.
+            </p>
+
+            {evidence.length > 0 && (
+              <>
+                <p className="section-title" style={{ marginTop: '1rem' }}>
+                  Evidence examined {investigation.servicesExamined ? `(${investigation.servicesExamined})` : ''}
+                </p>
+                <ul className="evidence-list">
+                  {evidence.map((e, i) => (
+                    <li key={i}>
+                      <span className="evidence-source">[{e.service_id}]</span>
+                      {e.source_type} {e.available ? `(${e.latency_ms}ms)` : '(unavailable)'}
+                      <span className="evidence-content">{JSON.stringify(e.content)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </>
+        )}
+      </div>
+
+      <div className="card">
+        <p className="section-title">Timeline</p>
+        <ul className="timeline">
+          {timeline.map((event) => (
+            <li key={event.id}>
+              <span className="timeline-time">{new Date(event.createdAt).toLocaleTimeString()}</span>
+              <strong>{event.eventType}</strong> <span className="timeline-actor">({event.actor})</span>
+              {event.payload ? `: ${event.payload}` : ''}
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   )
 }

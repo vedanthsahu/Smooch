@@ -1,0 +1,313 @@
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.badge-severity-P1 {
+  background: rgba(198, 40, 40, 0.12);
+  color: var(--severity-p1);
+}
+
+.badge-severity-P2 {
+  background: rgba(199, 119, 0, 0.12);
+  color: var(--severity-p2);
+}
+
+.badge-severity-P3 {
+  background: rgba(47, 111, 237, 0.12);
+  color: var(--severity-p3);
+}
+
+.badge-status {
+  background: var(--surface-alt);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+}
+
+.badge-status-CREATED,
+.badge-status-DETECTED {
+  color: var(--status-open);
+  border-color: color-mix(in srgb, var(--status-open) 40%, var(--border));
+}
+
+.badge-status-INVESTIGATING,
+.badge-status-DIAGNOSED,
+.badge-status-ACKNOWLEDGED {
+  color: var(--status-investigating);
+  border-color: color-mix(in srgb, var(--status-investigating) 40%, var(--border));
+}
+
+.badge-status-RESOLVED {
+  color: var(--status-resolved);
+  border-color: color-mix(in srgb, var(--status-resolved) 40%, var(--border));
+}
+
+.badge-status-ESCALATED_TO_HUMAN,
+.badge-status-CLOSED_SLA_BREACHED,
+.badge-status-REJECTED {
+  color: var(--status-escalated);
+  border-color: color-mix(in srgb, var(--status-escalated) 40%, var(--border));
+}
+
+/* Incident table */
+.incident-table {
+  width: 100%;
+}
+
+.incident-table th {
+  text-align: left;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+  padding: 0 10px 8px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+}
+
+.incident-table td {
+  padding: 10px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.incident-row {
+  cursor: pointer;
+}
+
+.incident-row:hover td {
+  background: var(--surface-alt);
+}
+
+.incident-id {
+  color: var(--text-faint);
+  font-family: var(--mono);
+  font-size: 0.82rem;
+}
+
+.incident-service {
+  font-weight: 600;
+}
+
+.incident-production {
+  color: var(--text-dim);
+  font-weight: 400;
+}
+
+/* SLA countdown */
+.sla-countdown {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.sla-countdown.ok {
+  color: var(--text);
+}
+
+.sla-countdown.warn {
+  color: var(--severity-p2);
+}
+
+.sla-countdown.breached {
+  color: var(--severity-p1);
+}
+
+.sla-countdown.resolved {
+  color: var(--status-resolved);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+/* Incident detail */
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.detail-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+
+.detail-meta {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  display: flex;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.sla-block {
+  text-align: right;
+}
+
+.sla-block .label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-faint);
+  margin-bottom: 2px;
+}
+
+.diagnosis-text {
+  white-space: pre-wrap;
+  margin: 0.4rem 0;
+  line-height: 1.55;
+}
+
+.investigation-meta {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  margin-bottom: 0.5rem;
+}
+
+.investigation-meta .chip {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 2px 8px;
+  font-family: var(--mono);
+}
+
+.disclaimer {
+  color: var(--text-faint);
+  font-size: 0.78rem;
+  margin-top: 0.5rem;
+}
+
+.evidence-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.evidence-list li {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 0.82rem;
+}
+
+.evidence-source {
+  font-weight: 700;
+  margin-right: 6px;
+}
+
+.evidence-content {
+  display: block;
+  margin-top: 3px;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  word-break: break-word;
+}
+
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-left: 2px solid var(--border);
+}
+
+.timeline li {
+  padding: 2px 0 12px 16px;
+  position: relative;
+  font-size: 0.85rem;
+}
+
+.timeline li::before {
+  content: '';
+  position: absolute;
+  left: -5px;
+  top: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.timeline-time {
+  color: var(--text-faint);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  margin-right: 8px;
+}
+
+.timeline-actor {
+  color: var(--text-dim);
+  font-weight: 400;
+}
+
+/* Scenario controls */
+.scenario-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.scenario-status {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+
+.scenario-status.error {
+  color: var(--severity-p1);
+}
+
+.scenario-status.ok {
+  color: var(--status-resolved);
+}
+
+/* Logs panel */
+.log-viewer {
+  background: #12141a;
+  color: #d7dde5;
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  line-height: 1.6;
+  max-height: 520px;
+  overflow-y: auto;
+}
+
+.log-line {
+  white-space: pre-wrap;
+  word-break: break-word;
+  display: flex;
+  gap: 10px;
+}
+
+.log-line + .log-line {
+  margin-top: 2px;
+}
+
+.log-timestamp {
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.log-message {
+  color: #d7dde5;
+}

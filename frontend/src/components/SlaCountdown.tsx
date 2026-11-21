@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import './components.css'
 
 function formatRemaining(ms: number): string {
   if (ms <= 0) return 'BREACHED'
@@ -18,14 +19,13 @@ export function SlaCountdown({ deadlineAt, resolved }: { deadlineAt: string; res
   }, [resolved])
 
   if (resolved) {
-    return <span style={{ color: '#2a8f4d' }}>resolved</span>
+    return <span className="sla-countdown resolved">resolved</span>
   }
 
   const remainingMs = new Date(deadlineAt).getTime() - now
   const breached = remainingMs <= 0
-  return (
-    <span style={{ color: breached ? 'crimson' : remainingMs < 5 * 60_000 ? '#c77700' : 'inherit', fontVariantNumeric: 'tabular-nums' }}>
-      {formatRemaining(remainingMs)}
-    </span>
-  )
+  const warn = !breached && remainingMs < 5 * 60_000
+  const className = `sla-countdown ${breached ? 'breached' : warn ? 'warn' : 'ok'}`
+
+  return <span className={className}>{formatRemaining(remainingMs)}</span>
 }
