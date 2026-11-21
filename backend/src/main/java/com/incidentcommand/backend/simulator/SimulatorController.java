@@ -24,8 +24,9 @@ public class SimulatorController {
     }
 
     @PostMapping("/scenarios/queue-consumer-failure/start")
-    public ResponseEntity<SimulatorClient.ScenarioStartResponse> startQueueConsumerFailure() {
+    public ResponseEntity<ScenarioStartedDto> startQueueConsumerFailure() {
         return simulatorClient.startQueueConsumerFailureScenario()
+                .map(ScenarioStartedDto::from)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.BAD_GATEWAY).build());
     }
