@@ -17,6 +17,9 @@
   "launched": "2026-11-21",
   "public_ip_at_launch": "15.207.221.90",
   "public_ip_note": "No Elastic IP attached -- this address can change on stop/start. Re-fetch before relying on it: aws ec2 describe-instances --profile ic-ec2 --region ap-south-1 --instance-ids i-07fe1fd3c1fe8ea6c --query 'Reservations[0].Instances[0].PublicIpAddress'",
-  "setup_state": "Bare Ubuntu instance only, per docs/24 Phase 5 scope. Simulator app deployment (clone repo, install deps, run as a process/systemd service) is a separate follow-up step, not yet done.",
+  "setup_state": "Simulator app deployed and live -- see infra/aws/ec2/deploy-simulator.sh (the exact steps run). Runs as systemd unit production-simulator.service under a venv at ~/production-simulator/.venv, auto-restarts on failure and on boot. Verified reachable externally: http://15.207.221.90:8090/health and /services/payment-api/health both returned correctly from outside the instance.",
+  "simulator_port": 8090,
+  "deploy_script": "infra/aws/ec2/deploy-simulator.sh",
+  "redeploy_after_code_changes": "./infra/aws/ec2/deploy-simulator.sh <current-public-ip> -- re-copies simulator/ and restarts the service",
   "cost_discipline": "Stop (not just the app) when not actively testing -- EC2 bills hourly while running regardless of CPU usage. Budget alarm AI-Incident-Command-AWS ($90) already covers this account."
 }
