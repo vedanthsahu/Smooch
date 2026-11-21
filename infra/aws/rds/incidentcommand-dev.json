@@ -1,0 +1,32 @@
+{
+  "purpose": "RDS PostgreSQL instance (docs/19-aws-strategy.md Phase 4, docs/24-aws-prerequisites-setup-guide.md Phase 3) -- the application's structured system of record once docker-compose Postgres stops being used locally.",
+  "account_id": "761018882755",
+  "region": "ap-south-1",
+  "db_instance_identifier": "incidentcommand-dev",
+  "engine": "postgres",
+  "instance_class": "db.t3.micro",
+  "storage": "20 GB gp3, encrypted, single-AZ (no Multi-AZ -- not needed for dev)",
+  "publicly_accessible": true,
+  "security_group_id": "sg-0bf1d4cac97b95ca8",
+  "security_group_name": "incidentcommand-rds-sg",
+  "security_group_rule": "PostgreSQL (5432) inbound restricted to the operator's public IP at creation time -- re-authorize if that IP changes",
+  "endpoint": "incidentcommand-dev.cra4ceammf7y.ap-south-1.rds.amazonaws.com",
+  "port": 5432,
+  "db_name": "incidentcommand",
+  "db_admin_account_name": "vedanth",
+  "db_admin_secret_note": "the real credential value lives only in backend/.env, which is gitignored and never committed",
+  "created": "2026-11-21",
+  "verified": {
+    "instance_status": "available",
+    "tcp_reachable": true,
+    "authentication": "confirmed via psql -- SELECT version() succeeded (PostgreSQL 18.3)",
+    "pgvector_extension": "enabled (vector 0.8.1, confirmed via \\dx)",
+    "schema": "all 15 tables from V1__identity/V2__production/V3__incidents present and correct",
+    "backend_startup": "cd backend && ./mvnw spring-boot:run -Dspring-boot.run.profiles=postgres -- 'Started BackendApplication in 10.371 seconds', full Hibernate schema validation passes, no errors"
+  },
+  "known_issues": {
+    "flyway_autoconfiguration_not_triggering": "Flyway never ran on its own (spring.flyway.enabled=true in application-postgres.properties notwithstanding) -- confirmed via a --debug condition-evaluation-report run: FlywayAutoConfiguration doesn't appear anywhere in it, not even as a negative match, despite flyway-core/flyway-database-postgresql 12.4.0 resolving fine in the local repo. Likely a Spring Boot 4.1.1 + Flyway 12.4.0 integration gap (possibly needs an additional starter dependency this version introduced). Worked around for this verification by applying V1/V2/V3 directly via psql -- the schema is correct and real, but Flyway's own bookkeeping table (flyway_schema_history) does not exist yet. This needs fixing in code before relying on Flyway for any future schema change; don't hand-forge flyway_schema_history rows (checksum mismatches), fix the autoconfiguration gap and let Flyway's baseline-on-migrate handle adopting the existing schema instead.",
+    "entity_column_type_mismatch_fixed": "Investigation.diagnosis / Investigation.evidenceJson were annotated @Lob, which Hibernate maps to Postgres's legacy 'oid' large-object type for String fields -- conflicted with the migration's 'text' columns (SchemaManagementException on startup). This was never caught locally because the H2 dev profile uses ddl-auto=update (no fixed schema to validate against). Fixed by switching to @JdbcTypeCode(SqlTypes.LONGVARCHAR), which maps to 'text' -- see the Investigation.java commit on this branch."
+  },
+  "cost_discipline": "No auto-stop for RDS (unlike EC2, stopping/starting isn't instant and self-restarts after 7 days if left stopped) -- budget alarm AI-Incident-Command-AWS ($90) covers this account; consider deleting this instance (or taking a final snapshot first) if the project goes idle for an extended period, since storage + instance-hours bill continuously."
+}

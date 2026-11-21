@@ -1,0 +1,13 @@
+{
+  "purpose": "Scoped IAM user for provisioning/managing the EC2 Production Simulator instance (docs/19-aws-strategy.md Phase 3). Deliberately NOT the account's AdministratorAccess user -- least-privilege per docs/24-aws-prerequisites-setup-guide.md Phase 1 intent, limited to EC2 actions only (no IAM, S3, RDS, or billing access).",
+  "account_id": "761018882755",
+  "iam_user_name": "incidentcommand-ec2-dev",
+  "iam_user_arn": "arn:aws:iam::761018882755:user/incidentcommand-ec2-dev",
+  "attached_policy_name": "incidentcommand-ec2-dev-policy",
+  "attached_policy_arn": "arn:aws:iam::761018882755:policy/incidentcommand-ec2-dev-policy",
+  "attached_policy_document": "incidentcommand-ec2-dev-policy.json",
+  "local_cli_profile": "ic-ec2",
+  "region": "ap-south-1",
+  "created": "2026-11-21",
+  "note": "Access keys for this user live only in the local ~/.aws/credentials [ic-ec2] profile -- never committed. This file intentionally contains no secrets."
+}

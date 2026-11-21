@@ -1,0 +1,18 @@
+{
+  "purpose": "S3 bucket for incident artifacts/exports (docs/19-aws-strategy.md Phase 5, docs/24-aws-prerequisites-setup-guide.md Phase 4) -- backs IncidentReportExportService.",
+  "account_id": "761018882755",
+  "region": "ap-south-1",
+  "bucket_name": "incidentcommand-artifacts-vedanth-dev",
+  "public_access": "fully blocked (BlockPublicAcls, IgnorePublicAcls, BlockPublicPolicy, RestrictPublicBuckets all true) -- nothing in this project needs public object access",
+  "versioning": "off (not needed for dev artifacts)",
+  "encryption": "SSE-S3 (AES256) default",
+  "created": "2026-11-21",
+  "application_iam_user": {
+    "name": "incidentcommand-s3-dev",
+    "arn": "arn:aws:iam::761018882755:user/incidentcommand-s3-dev",
+    "attached_policy_arn": "arn:aws:iam::761018882755:policy/incidentcommand-s3-dev-policy",
+    "scope": "s3:PutObject + s3:GetObject on bucket objects, s3:ListBucket on the bucket itself -- this bucket only, not account-wide S3 access",
+    "note": "Deliberately separate from incidentcommand-ec2-dev -- each service gets its own minimally-scoped credential, not one shared application user."
+  },
+  "local_dev_config": "Real bucket name + access key already filled into backend/.env (gitignored, never committed) -- see backend/.env.example for the template."
+}
