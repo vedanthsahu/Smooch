@@ -1,0 +1,38 @@
+{
+  "purpose": "Read-only, backend-mediated CloudWatch Logs visibility for the demo UI's Logs panel -- lets a demo viewer see real simulator activity without ever touching AWS directly (console federation into the user's personal trial account was deliberately rejected as a design option -- see the commit message on this branch for why).",
+  "account_id": "761018882755",
+  "region": "ap-south-1",
+  "log_group_name": "/incidentcommand/production-simulator",
+  "log_group_retention_days": 3,
+  "ingestion": {
+    "mechanism": "CloudWatch unified agent (1.300075.0b2061) on the EC2 instance, tailing a plain log file",
+    "instance_id": "i-07fe1fd3c1fe8ea6c",
+    "systemd_change": "production-simulator.service now sets StandardOutput/StandardError to append:/var/log/production-simulator.log instead of only going to the systemd journal, so the agent can tail a plain file rather than needing journald-specific agent config",
+    "agent_config_path_on_instance": "/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json",
+    "log_stream_name": "i-07fe1fd3c1fe8ea6c",
+    "iam_role_name": "incidentcommand-simulator-cwl-role",
+    "iam_role_arn": "arn:aws:iam::761018882755:role/incidentcommand-simulator-cwl-role",
+    "instance_profile_name": "incidentcommand-simulator-cwl-profile",
+    "instance_profile_arn": "arn:aws:iam::761018882755:instance-profile/incidentcommand-simulator-cwl-profile",
+    "attached_policy_arn": "arn:aws:iam::761018882755:policy/incidentcommand-simulator-cwl-write-policy",
+    "role_scope": "logs:CreateLogGroup/CreateLogStream/PutLogEvents/DescribeLogStreams on this one log group ARN only"
+  },
+  "backend_read_access": {
+    "iam_user_name": "incidentcommand-logs-reader-dev",
+    "iam_user_arn": "arn:aws:iam::761018882755:user/incidentcommand-logs-reader-dev",
+    "attached_policy_arn": "arn:aws:iam::761018882755:policy/incidentcommand-logs-reader-dev-policy",
+    "scope": "logs:GetLogEvents/FilterLogEvents/DescribeLogStreams on this one log group ARN only -- no write access, verified via a direct PutLogEvents call that was correctly denied",
+    "local_cli_profile": "ic-logs-reader",
+    "credential_location": "backend/.env (gitignored, never committed), distinct env vars AWS_LOGS_ACCESS_KEY_ID/AWS_LOGS_SECRET_ACCESS_KEY -- deliberately NOT the same AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY the S3Service already reads, so CloudWatchConfig builds its own explicit credentials provider rather than relying on the SDK default chain like S3Config does",
+    "never_exposed_to": "the frontend or any demo viewer -- the credential is used server-side only; the frontend calls the backend's own /api/logs/simulator endpoint"
+  },
+  "ic_ec2_user_policy_update": {
+    "note": "incidentcommand-ec2-dev's policy was extended (now v3) to add ec2:AssociateIamInstanceProfile/DisassociateIamInstanceProfile/ReplaceIamInstanceProfileAssociation and iam:PassRole scoped to ONLY arn:aws:iam::761018882755:role/incidentcommand-simulator-cwl-role -- not blanket PassRole, so this user still cannot pass any other role in the account"
+  },
+  "verified": {
+    "agent_status": "running, configstatus=configured",
+    "real_log_ingestion": "triggered real simulator HTTP requests (health check, scenario start, scenario reset) and confirmed the exact matching log lines appeared in CloudWatch Logs via FilterLogEvents",
+    "read_credential": "confirmed the reader user can FilterLogEvents (with an explicit start-time window -- open-ended queries returned empty even though data exists, so the backend service always bounds its query) and is correctly denied PutLogEvents"
+  },
+  "cost_note": "CloudWatch Logs ingestion + storage is low-volume for a demo simulator and well within the account's $90 budget alarm; 3-day retention keeps it from accumulating"
+}

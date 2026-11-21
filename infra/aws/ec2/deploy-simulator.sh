@@ -47,6 +47,8 @@ ssh -i "$KEY" "$REMOTE" '
 
 echo "==> Installing systemd service"
 ssh -i "$KEY" "$REMOTE" '
+  sudo touch /var/log/production-simulator.log
+  sudo chown ubuntu:ubuntu /var/log/production-simulator.log
   sudo tee /etc/systemd/system/production-simulator.service > /dev/null <<EOF
 [Unit]
 Description=Incident Command AI - Production Simulator
@@ -59,6 +61,8 @@ WorkingDirectory=/home/ubuntu/production-simulator
 ExecStart=/home/ubuntu/production-simulator/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8090
 Restart=on-failure
 RestartSec=5
+StandardOutput=append:/var/log/production-simulator.log
+StandardError=append:/var/log/production-simulator.log
 
 [Install]
 WantedBy=multi-user.target
@@ -66,6 +70,10 @@ EOF
   sudo systemctl daemon-reload
   sudo systemctl enable --now production-simulator
 '
+# Note: StandardOutput/StandardError write to a plain file, not just the
+# systemd journal -- the CloudWatch agent (see infra/aws/cloudwatch/
+# production-simulator-logging.json) tails this file rather than journald,
+# which sidesteps agent-version-specific journald input quirks.
 
 echo "==> Verifying"
 sleep 2
