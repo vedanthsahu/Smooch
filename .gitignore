@@ -22,6 +22,8 @@ simulator/.venv/
 .env
 .env.*
 !.env.example
+*.pem
+infra/aws/keys/
 
 # IDE
 .idea/
