@@ -11,9 +11,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 /**
  * Level 3: one investigation per incident, sequential evidence gathering +
@@ -38,11 +40,15 @@ public class Investigation {
     @Column(nullable = false)
     private InvestigationStatus status;
 
-    @Lob
+    // Not @Lob: on Postgres, @Lob + String maps to the legacy "oid" large-object
+    // type, not "text" -- only ever surfaced once this ran against real Postgres
+    // (docs/24 Phase 8) instead of H2, where the distinction doesn't exist.
+    // JdbcTypeCode(LONGVARCHAR) gets "text", matching the Flyway migration.
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Column(name = "diagnosis")
     private String diagnosis;
 
-    @Lob
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Column(name = "evidence_json")
     private String evidenceJson;
 
